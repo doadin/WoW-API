@@ -14,20 +14,37 @@ function ActionBarController_OnLoad(self)
 	-- This is used for shapeshifts/stances
 	self:RegisterEvent("UPDATE_BONUS_ACTIONBAR");
 	
+	--Vehicle Only
+	self:RegisterEvent("UNIT_DISPLAYPOWER");
+	
 	--MainBar Only
+
+	--Alternate Only
+	self:RegisterEvent("UPDATE_VEHICLE_ACTIONBAR");
+	self:RegisterEvent("UPDATE_OVERRIDE_ACTIONBAR");
 	
 	--Shapeshift/Stance Only
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORM");
 	self:RegisterEvent("UPDATE_SHAPESHIFT_FORMS");
 	self:RegisterEvent("UPDATE_SHAPESHIFT_USABLE");
 	self:RegisterEvent("UPDATE_INVENTORY_ALERTS");	-- Wha?? Still Wha...
+	
+	-- Possess Bar
+	self:RegisterEvent("UPDATE_POSSESS_BAR");
+	
+	--Extra Actionbar Only
+	self:RegisterEvent("UPDATE_EXTRA_ACTIONBAR");
 
 	-- MultiBarBottomLeft
 	self:RegisterEvent("ACTIONBAR_SHOW_BOTTOMLEFT");
 	
 	-- Misc
+	self:RegisterEvent("PET_BATTLE_CLOSE");
 	
 	CURRENT_ACTION_BAR_STATE = LE_ACTIONBAR_STATE_MAIN;
+	
+	-- hack to fix crasy animation on bars when action bar is also animating
+	StatusTrackingBarManager:SetBarAnimation(ActionBarBusy);
 end
 
 
@@ -43,6 +60,10 @@ function ActionBarController_OnEvent(self, event, ...)
 		or event == "UPDATE_OVERRIDE_ACTIONBAR"
 		or event == "ACTIONBAR_PAGE_CHANGED" ) then
 		ActionBarController_UpdateAll();
+	end
+	
+	if ( event == "UPDATE_BONUS_ACTIONBAR" ) then
+		IconIntroTracker:ResetAll();
 	end
 	
 	if ( event == "UNIT_DISPLAYPOWER" ) then
@@ -82,12 +103,22 @@ end
 
 
 function ActionBarController_UpdateAll(force)
+	PossessBar_Update();
 	StanceBar_Update();
 	CURRENT_ACTION_BAR_STATE = LE_ACTIONBAR_STATE_MAIN;
-
+	
+	-- If we have a skinned vehicle bar or skinned override bar, display the OverrideActionBar
+	if ((HasVehicleActionBar() and UnitVehicleSkin("player") and UnitVehicleSkin("player") ~= "")
+	or (HasOverrideActionBar() and GetOverrideBarSkin() and GetOverrideBarSkin() ~= 0)) then
+		OverrideActionBar_UpdateSkin();
+		CURRENT_ACTION_BAR_STATE = LE_ACTIONBAR_STATE_OVERRIDE;
 	-- If we have a non-skinned override bar of some sort, use the MainMenuBarArtFrame
-	if ( HasBonusActionBar() or HasTempShapeshiftActionBar() ) then
-		if (HasTempShapeshiftActionBar()) then
+	elseif ( HasBonusActionBar() or HasOverrideActionBar() or HasVehicleActionBar() or HasTempShapeshiftActionBar() or C_PetBattles.IsInBattle() ) then
+		if (HasVehicleActionBar()) then
+			MainMenuBarArtFrame:SetAttribute("actionpage", GetVehicleBarIndex());
+		elseif (HasOverrideActionBar()) then
+			MainMenuBarArtFrame:SetAttribute("actionpage", GetOverrideBarIndex());
+		elseif (HasTempShapeshiftActionBar()) then
 			MainMenuBarArtFrame:SetAttribute("actionpage", GetTempShapeshiftBarIndex());
 		elseif (HasBonusActionBar() and GetActionBarPage() == 1) then
 			MainMenuBarArtFrame:SetAttribute("actionpage", GetBonusBarIndex());
@@ -121,7 +152,7 @@ end
 ----------------------------------------------------
 
 function ActionBarBusy()
-	return MainMenuBar.slideOut:IsPlaying();
+	return MainMenuBar.slideOut:IsPlaying() or OverrideActionBar.slideOut:IsPlaying() or C_PetBattles.IsInBattle();
 end
 
 function BeginActionBarTransition(bar, animIn)
@@ -139,11 +170,13 @@ function ValidateActionBarTransition()
 	UIParent_ManageFramePositions();
 	
 	if CURRENT_ACTION_BAR_STATE == LE_ACTIONBAR_STATE_MAIN then
-		if not MainMenuBar:IsShown() then
+		if OverrideActionBar:IsShown() then
+			BeginActionBarTransition(OverrideActionBar, nil);
+		elseif not MainMenuBar:IsShown() then
 			BeginActionBarTransition(MainMenuBar, 1);
 			if ( SHOW_MULTI_ACTIONBAR_3 ) then
-			BeginActionBarTransition(MultiBarRight, 1);
-		end
+				BeginActionBarTransition(MultiBarRight, 1);
+			end
 			if ( SHOW_MULTI_ACTIONBAR_4 ) then
 				BeginActionBarTransition(MultiBarLeft, 1);
 			end
@@ -152,7 +185,7 @@ function ValidateActionBarTransition()
 		if MainMenuBar:IsShown() then
 			BeginActionBarTransition(MainMenuBar, nil);
 			if ( SHOW_MULTI_ACTIONBAR_3 ) then
-			BeginActionBarTransition(MultiBarRight, nil);
+				BeginActionBarTransition(MultiBarRight, nil);
 			end
 			if ( SHOW_MULTI_ACTIONBAR_4 ) then
 				BeginActionBarTransition(MultiBarLeft, nil);

@@ -1,4 +1,7 @@
-INSPECTFRAME_SUBFRAMES = { "InspectPaperDollFrame", "InspectHonorFrame" };
+
+INSPECTFRAME_SUBFRAMES = { "InspectPaperDollFrame", "InspectPVPFrame", "InspectTalentFrame", "InspectGuildFrame" };
+
+UIPanelWindows["InspectFrame"] = { area = "left", pushable = 0, };
 
 function InspectFrame_Show(unit)
 	HideUIPanel(InspectFrame);
@@ -23,9 +26,9 @@ function InspectFrame_OnLoad(self)
 	INSPECTED_UNIT = nil;
 
 	-- Tab Handling code
-	PanelTemplates_SetNumTabs(self, 2);
+	PanelTemplates_SetNumTabs(self, 4);
 	PanelTemplates_SetTab(self, 1);
-	InspectNameText:SetFontObject("GameFontHighlight");
+	self.TitleText:SetFontObject("GameFontHighlight");
 end
 
 function InspectFrame_OnEvent(self, event, unit, ...)
@@ -54,7 +57,7 @@ function InspectFrame_OnEvent(self, event, unit, ...)
 	elseif ( event == "UNIT_NAME_UPDATE" ) then
 		local unit = ...;
 		if ( unit == self.unit ) then
-			InspectNameText:SetText(GetUnitName(self.unit, true));
+			InspectFrameTitleText:SetText(GetUnitName(self.unit, true));
 		end
 	elseif ( event == "UNIT_PORTRAIT_UPDATE" ) then
 		local unit = ...;
@@ -71,7 +74,7 @@ function InspectFrame_UnitChanged(self)
 	NotifyInspect(unit);
 	InspectPaperDollFrame_OnShow(self);
 	SetPortraitTexture(InspectFramePortrait, unit);
-	InspectNameText:SetText(GetUnitName(unit, true));
+	InspectFrameTitleText:SetText(GetUnitName(unit, true));
 	InspectFrame_UpdateTabs();
 	if ( InspectPVPFrame:IsShown() ) then
 		InspectPVPFrame_OnShow();
@@ -84,7 +87,7 @@ function InspectFrame_OnShow(self)
 	end
 	PlaySound(SOUNDKIT.IG_CHARACTER_INFO_OPEN);	
 	SetPortraitTexture(InspectFramePortrait, self.unit);
-	InspectNameText:SetText(GetUnitName(self.unit, true));
+	InspectFrameTitleText:SetText(GetUnitName(self.unit, true));
 end
 
 function InspectFrame_OnHide(self)
@@ -93,7 +96,14 @@ function InspectFrame_OnHide(self)
 
 	-- Clear the player being inspected
 	ClearInspectPlayer();
+
+	-- in the InspectTalentFrame_Update function, a default talent tab is selected smartly if there is no tab selected
+	-- it actually ends up feeling natural to have this behavior happen every time the frame is shown
+	PanelTemplates_SetTab(InspectTalentFrame, nil);
 end
+
+function InspectFrame_OnUpdate(self)
+end		
 
 function InspectSwitchTabs(newID)
 	local newFrame = _G[INSPECTFRAME_SUBFRAMES[newID]];
@@ -115,5 +125,27 @@ end
 function InspectFrame_UpdateTabs()
 	if ( not InspectFrame.unit ) then
 		return;
+	end
+	
+	-- Talent tab
+	local level = UnitLevel(InspectFrame.unit);
+	if ( level < 10 ) then
+		PanelTemplates_DisableTab(InspectFrame, 3);
+		if ( PanelTemplates_GetSelectedTab(InspectFrame) == 3 ) then
+			InspectSwitchTabs(1);
+		end
+	else
+		PanelTemplates_EnableTab(InspectFrame, 3);
+	end
+	
+	-- Guild tab
+	local _, _, guildName = GetInspectGuildInfo(InspectFrame.unit);
+	if ( guildName and guildName ~= "" ) then
+		PanelTemplates_EnableTab(InspectFrame, 4);
+	else
+		PanelTemplates_DisableTab(InspectFrame, 4);
+		if ( PanelTemplates_GetSelectedTab(InspectFrame) == 4 ) then
+			InspectSwitchTabs(1);
+		end	
 	end
 end

@@ -14,6 +14,7 @@ function AreaLabelDataProviderMixin:OnAdded(mapCanvas)
 	end
 
 	self.Label:SetPoint("TOP", self:GetMap():GetCanvasContainer(), 0, self:GetOffsetY());
+	self.Label:SetFrameStrata("HIGH");
 	self.Label.dataProvider = self;
 
 	self:GetMap():RegisterCallback("SetAreaLabel", self.setAreaLabelCallback);
@@ -23,14 +24,14 @@ function AreaLabelDataProviderMixin:OnAdded(mapCanvas)
 end
 
 function AreaLabelDataProviderMixin:OnRemoved(mapCanvas)
-	MapCanvasDataProviderMixin.OnAdded(self, mapCanvas);
-
 	self:GetMap():UnregisterCallback("SetAreaLabel", self.setAreaLabelCallback);
 	self:GetMap():UnregisterCallback("ClearAreaLabel", self.clearAreaLabelCallback);	
 	
 	self.Label.dataProvider = nil;
 	self.Label:ClearAllPoints();
 	self.Label:Hide();
+
+	MapCanvasDataProviderMixin.OnRemoved(self, mapCanvas);
 end
 
 function AreaLabelDataProviderMixin:GetOffsetY()
@@ -92,7 +93,6 @@ function AreaLabelFrameMixin:OnUpdate()
 				end
 			end
 
---[[
 			local _, _, _, _, locked = C_PetJournal.GetPetLoadOutInfo(1);
 			if not locked and GetCVarBool("showTamers") then --don't show pet levels for people who haven't unlocked battle petting
 				if petMinLevel and petMaxLevel and petMinLevel > 0 and petMaxLevel > 0 then
@@ -120,7 +120,6 @@ function AreaLabelFrameMixin:OnUpdate()
 					end
 				end
 			end
-]]
 		else
 			name = MapUtil.FindBestAreaNameAtMouse(mapID, normalizedCursorX, normalizedCursorY);
 		end
@@ -159,14 +158,8 @@ function AreaLabelFrameMixin:ClearAllLabels()
 	self.dirty = true;
 end
 
-function AreaLabelFrameMixin:EvaluateLabels()
-	if not self.dirty then
-		return;
-	end
-	self.dirty = false;
-
-	local highestPriorityAreaLabelType;
-
+function AreaLabelFrameMixin:GetHighestPriorityLabelInfo()
+	local highestPriorityAreaLabelType = nil;
 	for areaLabelName, areaLabelType in pairs(MAP_AREA_LABEL_TYPE) do
 		local areaLabelInfo = self.labelInfoByType[areaLabelType];
 		if areaLabelInfo and areaLabelInfo.name then
@@ -177,9 +170,31 @@ function AreaLabelFrameMixin:EvaluateLabels()
 	end
 
 	if highestPriorityAreaLabelType then
-		local areaLabelInfo = self.labelInfoByType[highestPriorityAreaLabelType];
+		return self.labelInfoByType[highestPriorityAreaLabelType];
+	end
+end
+
+function AreaLabelFrameMixin:IsDirty()
+	local areaLabelInfo = self:GetHighestPriorityLabelInfo();
+	if areaLabelInfo and type(areaLabelInfo.description) == "function" then
+		return true;
+	end
+
+	return self.dirty;
+end
+
+function AreaLabelFrameMixin:EvaluateLabels()
+	if not self:IsDirty() then
+		return;
+	end
+	self.dirty = false;
+
+	local areaLabelInfo = self:GetHighestPriorityLabelInfo();
+	if areaLabelInfo then
 		self.Name:SetText(areaLabelInfo.name);
-		self.Description:SetText(areaLabelInfo.description);
+
+		local description = (type(areaLabelInfo.description) == "function" and areaLabelInfo.description()) or areaLabelInfo.description;
+		self.Description:SetText(description);
 
 		if areaLabelInfo.nameColor then
 			self.Name:SetVertexColor(areaLabelInfo.nameColor:GetRGB());
@@ -194,7 +209,6 @@ function AreaLabelFrameMixin:EvaluateLabels()
 		end
 		
 		if areaLabelInfo.textureInfo then
-			self.Texture:SetAtlas(areaLabelInfo.textureInfo.atlas);
 			self.Texture:SetAtlas(areaLabelInfo.textureInfo.atlas);
 			self.Texture:SetSize(areaLabelInfo.textureInfo.width, areaLabelInfo.textureInfo.height);
 			self.Texture:Show();

@@ -41,12 +41,25 @@ function CommunitiesInvitationFrameMixin:DisplayInvitation(invitationInfo)
 	self.inviterInfo = inviterInfo;
 	self.clubId = clubInfo.clubId;
 	
-	local inviterText = inviterInfo.name or "";
+	local isCharacterClub = clubInfo.clubType == Enum.ClubType.Character;
+	local inviterName = inviterInfo.name or "";
+	local classInfo = inviterInfo.classID and C_CreatureInfo.GetClassInfo(inviterInfo.classID);
+	local inviterText;
+	if isCharacterClub and classInfo then
+		local classColorInfo = RAID_CLASS_COLORS[classInfo.classFile];
+		inviterText = GetPlayerLink(inviterName, ("[%s]"):format(WrapTextInColorCode(inviterName, classColorInfo.colorStr)));
+	elseif isCharacterClub then
+		inviterText = GetPlayerLink(inviterName, ("[%s]"):format(inviterName));
+	else
+		inviterText = inviterName;
+	end
 
 	self.InvitationText:SetText(COMMUNITY_INVITATION_FRAME_INVITATION_TEXT:format(inviterText));
 	
-	self.Type:SetText(COMMUNITIES_INVITATION_FRAME_TYPE);
+	local clubTypeText = isCharacterClub and COMMUNITIES_INVITATION_FRAME_TYPE_CHARACTER or COMMUNITIES_INVITATION_FRAME_TYPE;
+	self.Type:SetText(clubTypeText);
 	C_Club.SetAvatarTexture(self.Icon, clubInfo.avatarId, clubInfo.clubType);
+	self.IconRing:SetAtlas(clubInfo.clubType == Enum.ClubType.BattleNet and "communities-ring-blue" or "communities-ring-gold");
 	self.Name:SetText(clubInfo.name);
 	
 	if clubInfo.description ~= "" then
@@ -129,7 +142,9 @@ function CommunitiesTicketFrameMixin:DisplayTicket(ticketInfo)
 	local clubInfo = ticketInfo.clubInfo;
 	self.clubId = clubInfo.clubId;
 
-	self.Type:SetText(COMMUNITIES_INVITATION_FRAME_TYPE);
+	local isCharacterClub = clubInfo.clubType == Enum.ClubType.Character;
+	local clubTypeText = isCharacterClub and COMMUNITIES_INVITATION_FRAME_TYPE_CHARACTER or COMMUNITIES_INVITATION_FRAME_TYPE;
+	self.Type:SetText(clubTypeText);
 	C_Club.SetAvatarTexture(self.Icon, clubInfo.avatarId, clubInfo.clubType);
 	self.Name:SetText(clubInfo.name);
 	

@@ -14,7 +14,12 @@ function CommunitiesSettingsDialogMixin:OnLoad()
 end
 
 function CommunitiesSettingsDialogMixin:OnShow()
-	self.DialogLabel:SetText(COMMUNITIES_SETTINGS_LABEL);
+	if self:GetClubType() == Enum.ClubType.BattleNet then
+		self.DialogLabel:SetText(COMMUNITIES_SETTINGS_LABEL);
+	else
+		self.DialogLabel:SetText(COMMUNITIES_SETTINGS_CHARACTER_LABEL);
+	end
+	
 	CommunitiesFrame:RegisterDialogShown(self);
 end
 
@@ -23,12 +28,12 @@ function CommunitiesSettingsDialogMixin:SetClubId(clubId)
 	if clubInfo then
 		self.clubId = clubId;
 		self.clubType = clubInfo.clubType;
-		self.IconPreviewRing:SetAtlas("communities-ring-blue");
+		self.IconPreviewRing:SetAtlas(self.clubType == Enum.ClubType.BattleNet and "communities-ring-blue" or "communities-ring-gold");
 		self:SetAvatarId(clubInfo.avatarId);
 		self.NameEdit:SetText(clubInfo.name);
 		self.ShortNameEdit:SetText(clubInfo.shortName or "");
 		self.Description.EditBox:SetText(clubInfo.description);
-		self.Description.EditBox.Instructions:SetText(COMMUNITIES_CREATE_DIALOG_DESCRIPTION_INSTRUCTIONS_BATTLE_NET);
+		self.Description.EditBox.Instructions:SetText(self.clubType == Enum.ClubType.BattleNet and COMMUNITIES_CREATE_DIALOG_DESCRIPTION_INSTRUCTIONS_BATTLE_NET or COMMUNITIES_CREATE_DIALOG_DESCRIPTION_INSTRUCTIONS);
 		self.MessageOfTheDay.EditBox:SetText(clubInfo.broadcast);
 	end
 end

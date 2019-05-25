@@ -12,7 +12,12 @@ function GuildRegistrar_ShowPurchaseFrame()
 end
 
 function GuildRegistrar_PurchaseCharter(hasConfirmed)
-	BuyGuildCharter(GuildRegistrarFrameEditBox:GetText());
-	HideUIPanel(GuildRegistrarFrame);
-	ChatEdit_FocusActiveWindow();
+	local name, description, standingID, barMin, barMax, barValue = GetGuildFactionInfo();
+	if ( not hasConfirmed and ( standingID > 4 or barValue > 0 ) ) then
+		StaticPopup_Show("CONFIRM_GUILD_CHARTER_PURCHASE");
+	else
+		BuyGuildCharter(GuildRegistrarFrameEditBox:GetText());
+		HideUIPanel(GuildRegistrarFrame);
+		ChatEdit_FocusActiveWindow();
+	end
 end

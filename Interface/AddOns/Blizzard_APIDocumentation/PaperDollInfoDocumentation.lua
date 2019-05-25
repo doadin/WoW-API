@@ -36,12 +36,42 @@ local PaperDollInfo =
 			},
 		},
 		{
+			Name = "GetInspectAzeriteItemEmpoweredChoices",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "unit", Type = "string", Nilable = false },
+				{ Name = "equipmentSlotIndex", Type = "number", Nilable = false },
+			},
+
+			Returns =
+			{
+				{ Name = "azeritePowerIDs", Type = "table", InnerType = "number", Nilable = false },
+			},
+		},
+		{
 			Name = "GetMinItemLevel",
 			Type = "Function",
 
 			Returns =
 			{
 				{ Name = "minItemLevel", Type = "number", Nilable = true },
+			},
+		},
+		{
+			Name = "GetStaggerPercentage",
+			Type = "Function",
+
+			Arguments =
+			{
+				{ Name = "unit", Type = "string", Nilable = false },
+			},
+
+			Returns =
+			{
+				{ Name = "stagger", Type = "number", Nilable = false },
+				{ Name = "staggerAgainstTarget", Type = "number", Nilable = true },
 			},
 		},
 		{
@@ -67,12 +97,26 @@ local PaperDollInfo =
 	Events =
 	{
 		{
+			Name = "AvoidanceUpdate",
+			Type = "Event",
+			LiteralName = "AVOIDANCE_UPDATE",
+		},
+		{
 			Name = "CharacterPointsChanged",
 			Type = "Event",
 			LiteralName = "CHARACTER_POINTS_CHANGED",
 			Payload =
 			{
 				{ Name = "change", Type = "number", Nilable = false },
+			},
+		},
+		{
+			Name = "CharacterUpgradeSpellTierSet",
+			Type = "Event",
+			LiteralName = "CHARACTER_UPGRADE_SPELL_TIER_SET",
+			Payload =
+			{
+				{ Name = "tierIndex", Type = "number", Nilable = false },
 			},
 		},
 		{
@@ -114,6 +158,16 @@ local PaperDollInfo =
 			},
 		},
 		{
+			Name = "LifestealUpdate",
+			Type = "Event",
+			LiteralName = "LIFESTEAL_UPDATE",
+		},
+		{
+			Name = "MasteryUpdate",
+			Type = "Event",
+			LiteralName = "MASTERY_UPDATE",
+		},
+		{
 			Name = "PetSpellPowerUpdate",
 			Type = "Event",
 			LiteralName = "PET_SPELL_POWER_UPDATE",
@@ -134,9 +188,24 @@ local PaperDollInfo =
 			},
 		},
 		{
+			Name = "PvpPowerUpdate",
+			Type = "Event",
+			LiteralName = "PVP_POWER_UPDATE",
+		},
+		{
+			Name = "SpeedUpdate",
+			Type = "Event",
+			LiteralName = "SPEED_UPDATE",
+		},
+		{
 			Name = "SpellPowerChanged",
 			Type = "Event",
 			LiteralName = "SPELL_POWER_CHANGED",
+		},
+		{
+			Name = "SturdinessUpdate",
+			Type = "Event",
+			LiteralName = "STURDINESS_UPDATE",
 		},
 		{
 			Name = "UpdateFaction",

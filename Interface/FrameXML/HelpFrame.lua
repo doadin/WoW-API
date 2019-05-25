@@ -340,9 +340,9 @@ end
 
 function HelpFrame_ShowReportCheatingDialog(playerLocation)
 	local frame = ReportCheatingDialog;
-	frame.target = playerLocation;
 	frame.CommentFrame.EditBox:SetText("");
 	frame.CommentFrame.EditBox.InformationText:Show();
+	frame.reportToken = C_ReportSystem.InitiateReportPlayer(PLAYER_REPORT_TYPE_CHEATING, playerLocation);
 	StaticPopupSpecial_Show(frame);
 end
 
@@ -387,11 +387,15 @@ end
 
 function AccountSecurityOpenTicket_OnClick(self)
 	PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
-	local data = HelpFrameNavTbl[self:GetID()];
-	if ( not data.noSelection ) then
-		HelpFrame_SetSelectedButton(self);
+	if ( HelpBrowser:HasConnection() ) then
+		local data = HelpFrameNavTbl[self:GetID()];
+		if ( not data.noSelection ) then
+			HelpFrame_SetSelectedButton(self);
+		end
+		HelpFrame_SetFrameByKey(self:GetID());
+	else
+		StaticPopup_Show("CONFIRM_LAUNCH_URL", nil, nil, {index = 6});
 	end
-	HelpFrame_SetFrameByKey(self:GetID());
 end
 
 --
@@ -704,15 +708,19 @@ end
 
 
 function KnowledgeBase_OnShow(self)
-	HelpBrowser:Show();
 	if ( not kbsetupLoaded ) then
 		KnowledgeBase_GotoTopIssues();
-	else
-		HelpBrowser:NavigateHome("KnowledgeBase");
 	end
 
-	HelpBrowser.homepage = "KnowledgeBase"
-	HideKnowledgeBase();
+	if (HelpBrowser:HasConnection()) then
+		HelpBrowser:Show();
+		HelpBrowser:NavigateHome("KnowledgeBase");
+		HelpBrowser.homepage = "KnowledgeBase"
+		HideKnowledgeBase();
+	else
+		HelpBrowser:Hide();
+		ShowKnowledgeBase();
+	end
 end
 
 function HideKnowledgeBase()

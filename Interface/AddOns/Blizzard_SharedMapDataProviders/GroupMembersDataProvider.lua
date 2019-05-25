@@ -14,9 +14,10 @@ function GroupMembersDataProviderMixin:OnAdded(mapCanvas)
 end
 
 function GroupMembersDataProviderMixin:OnRemoved(mapCanvas)
-	MapCanvasDataProviderMixin.OnRemoved(self, mapCanvas);
 	self:GetMap():RemoveAllPinsByTemplate("GroupMembersPinTemplate");
 	mapCanvas:RemoveCanvasClickHandler(self.onClickHandler);
+
+	MapCanvasDataProviderMixin.OnRemoved(self, mapCanvas);
 end
 
 function GroupMembersDataProviderMixin:OnMapChanged()
@@ -50,9 +51,9 @@ end
 function GroupMembersDataProviderMixin:GetUnitPinSizesTable()
 	if not self.unitPinSizes then
 		self.unitPinSizes = {
-			player = 16,
-			party = 16,
-			raid = 16;
+			player = 27,
+			party = 11,
+			raid = 11 * 0.75;
 		};
 	end
 	return self.unitPinSizes;
@@ -135,7 +136,7 @@ function GroupMembersPinMixin:SynchronizePinSizes()
 			self:SetPinSize(unit, size / scale);
 		end
 	end
-	self:SetPlayerPingScale(.35 / scale);
+	self:SetPlayerPingScale(.65 / scale);
 end
 
 function GroupMembersPinMixin:OnCanvasSizeChanged()
@@ -151,7 +152,7 @@ function GroupMembersPinMixin:OnCanvasClicked(button, cursorX, cursorY)
 	self.reportableUnits = { };
 	if GetCVarBool("enablePVPNotifyAFK") and button == "RightButton" then
 		local _, instanceType = IsInInstance();
-		if instanceType == "pvp" then
+		if instanceType == "pvp" or IsInActiveWorldPVP() then
 			local timeNowSeconds = GetTime();
 			local mouseOverUnits = self:GetCurrentMouseOverUnits();
 			for unit in pairs(mouseOverUnits) do

@@ -11,6 +11,21 @@ local Tutorial =
 	Events =
 	{
 		{
+			Name = "NpeTutorialUpdate",
+			Type = "Event",
+			LiteralName = "NPE_TUTORIAL_UPDATE",
+		},
+		{
+			Name = "TutorialHighlightSpell",
+			Type = "Event",
+			LiteralName = "TUTORIAL_HIGHLIGHT_SPELL",
+			Payload =
+			{
+				{ Name = "spellID", Type = "number", Nilable = false },
+				{ Name = "tutorialGlobalStringTag", Type = "string", Nilable = false },
+			},
+		},
+		{
 			Name = "TutorialTrigger",
 			Type = "Event",
 			LiteralName = "TUTORIAL_TRIGGER",
@@ -19,6 +34,11 @@ local Tutorial =
 				{ Name = "tutorialIndex", Type = "number", Nilable = false },
 				{ Name = "forceShow", Type = "bool", Nilable = false },
 			},
+		},
+		{
+			Name = "TutorialUnhighlightSpell",
+			Type = "Event",
+			LiteralName = "TUTORIAL_UNHIGHLIGHT_SPELL",
 		},
 	},
 

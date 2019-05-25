@@ -72,20 +72,6 @@
 					</OnClick>
 				</Scripts>
 			</Button>
-			<Button name="$parentClassicDefault" inherits="GlueButtonSmallTemplateBlue" text="CLASSIC_DEFAULTS">
-				<Size>
-					<AbsDimension x="140" y="38"/>
-				</Size>
-				<Anchors>
-					<Anchor point="BOTTOMLEFT" relativeTo="$parentDefault" relativePoint="BOTTOMRIGHT"/>
-				</Anchors>
-				<Scripts>
-					<OnClick>
-						PlaySound(SOUNDKIT.IG_MAINMENU_OPTION);
-						VideoOptionsFrameClassic_OnClick(self, button);
-					</OnClick>
-				</Scripts>
-			</Button>
 			<Button name="$parentReset" inherits="GlueButtonSmallTemplateBlue" text="RESET_SETTINGS">
 				<Size x="220" y="38"/>
 				<Anchors>

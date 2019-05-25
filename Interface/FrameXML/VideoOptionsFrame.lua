@@ -14,10 +14,6 @@ function VideoOptionsFrame_SetCurrentToDefaults ()
 	VideoOptionsFrameApply:Disable();
 end
 
-function VideoOptionsFrame_SetCurrentToClassic ()
-	OptionsFrame_SetCurrentToClassic(VideoOptionsFrame);
-end
-
 function VideoOptionsFrame_OnLoad (self)
 	OptionsFrame_OnLoad(self);
 
@@ -61,9 +57,4 @@ function VideoOptionsFrameDefault_OnClick (self, button)
 	OptionsFrameDefault_OnClick(VideoOptionsFrame);
 
 	StaticPopup_Show("CONFIRM_RESET_VIDEO_SETTINGS");
-end
-
-function VideoOptionsFrameClassic_OnClick (self, button)
-	OptionsFrameDefault_OnClick(VideoOptionsFrame);
-	VideoOptionsFrame_SetCurrentToClassic();
 end

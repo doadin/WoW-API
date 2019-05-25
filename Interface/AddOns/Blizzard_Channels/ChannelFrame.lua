@@ -222,8 +222,7 @@ function ChannelFrameMixin:HideTutorial()
 end
 
 function ChannelFrameMixin:ShouldShowTutorial()
-	return false; -- Disabling this modern-style tutorial for Classic.
-	--return UnitLevel("player") >= 10 and not GetCVarBitfield("closedInfoFrames", LE_FRAME_TUTORIAL_CHAT_CHANNELS);
+	return UnitLevel("player") >= 10 and not GetCVarBitfield("closedInfoFrames", LE_FRAME_TUTORIAL_CHAT_CHANNELS);
 end
 
 function ChannelFrameMixin:TryCreateVoiceChannel(channelName)
@@ -406,12 +405,15 @@ function ChannelFrameMixin:OnVoiceChannelDisplayNameChanged(channelID, channelNa
 end
 
 function ChannelFrameMixin:OnVoiceChatError(platformCode, statusCode)
-	local errorCode = Voice_GetGameErrorFromStatusCode(statusCode);
 	local errorString = Voice_GetGameAlertStringFromStatusCode(statusCode);
 	if errorString then
-		UIErrorsFrame:TryDisplayMessage(errorCode, errorString, RED_FONT_COLOR:GetRGB());
 		ChatFrame_DisplayUsageError(errorString);
 		self.lastError = statusCode;
+	end
+
+	local errorCode = Voice_GetGameErrorFromStatusCode(statusCode);
+	if errorCode then
+		UIErrorsFrame:TryDisplayMessage(errorCode, errorString, RED_FONT_COLOR:GetRGB());
 	end
 end
 

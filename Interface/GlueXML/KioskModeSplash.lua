@@ -80,12 +80,10 @@ local kioskModeData = {
 function KioskModeSplash_OnLoad(self)
 	self.autoEnterWorld = false;
 	self.mode = nil;
-	SetLoginScreenModel(KioskBackgroundModel);
 end
 
 function KioskModeSplash_OnShow(self)
 	self.mode = nil;
-	SetClassicLogo(self.UI.GameLogo, GetClientDisplayExpansionLevel());
 end
 
 function KioskModeSplash_OnKeyDown(self,key)
@@ -145,6 +143,8 @@ end
 function KioskModeSplashChoice_OnClick(self, button, down)
 	PlaySound(SOUNDKIT.IG_MAINMENU_OPTION_CHECKBOX_ON);
 	if (self:GetID() == 1) then
+		KioskModeSplash_SetMode("highlevel");
+	else
 		KioskModeSplash_SetMode("newcharacter");
 	end
 

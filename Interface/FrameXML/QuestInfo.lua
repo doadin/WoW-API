@@ -67,6 +67,9 @@ function QuestInfo_Display(template, parentFrame, acceptButton, material, mapVie
 			if sealQuestInfo.text or sealQuestInfo.sealAtlas then
 				QuestInfoSealFrame.sealInfo = sealQuestInfo;
 			end
+		elseif ( C_CampaignInfo.IsCampaignQuest(questID) and not EXCEPTION_QUESTS[questID] ) then
+			sealMaterialBG:SetAtlas( "QuestBG-"..UnitFactionGroup("player"));
+			sealMaterialBG:Show();
 		end
 	end
 
@@ -162,7 +165,7 @@ function QuestInfo_ShowDescriptionText()
 		questDescription = GetQuestText();
 	end
 	QuestInfoDescriptionText:SetText(questDescription);
-	QuestInfoDescriptionText:SetWidth(270); -- Hardcoding this value since it's different for 1.12.
+	QuestInfoDescriptionText:SetWidth(ACTIVE_TEMPLATE.contentWidth);
 	return QuestInfoDescriptionText;
 end
 
@@ -300,7 +303,7 @@ function QuestInfo_ShowRequiredMoney()
 end
 
 function QuestInfo_ShowGroupSize()
-	--[[local groupNum;
+	local groupNum;
 	if ( QuestInfoFrame.questLog ) then
 		groupNum = GetQuestLogGroupNum();
 	else
@@ -314,7 +317,7 @@ function QuestInfo_ShowGroupSize()
 	else
 		QuestInfoGroupSize:Hide();
 		return nil;
-	end]]
+	end
 end
 
 function QuestInfo_ShowDescriptionHeader()
@@ -333,7 +336,7 @@ function QuestInfo_ShowObjectivesText()
 		questObjectives = GetObjectiveText();
 	end
 	QuestInfoObjectivesText:SetText(questObjectives);
-	QuestInfoObjectivesText:SetWidth(270); -- Hardcoding this value since it's different for 1.12.
+	QuestInfoObjectivesText:SetWidth(ACTIVE_TEMPLATE.contentWidth);
 	return QuestInfoObjectivesText;
 end
 
@@ -441,31 +444,29 @@ function QuestInfo_ShowRewards()
 	if ( QuestInfoFrame.questLog ) then
 		local questID = select(8, GetQuestLogTitle(GetQuestLogSelection()));
 		if C_QuestLog.ShouldShowQuestRewards(questID) then
-		numQuestRewards = GetNumQuestLogRewards();
-		numQuestChoices = GetNumQuestLogChoices();
-		numQuestCurrencies = GetNumQuestLogRewardCurrencies();
-		money = GetQuestLogRewardMoney();
-		skillName, skillIcon, skillPoints = GetQuestLogRewardSkillPoints();
-		-- Don't show XP rewards in Classic.
-		xp = 0; -- GetQuestLogRewardXP();
-		artifactXP, artifactCategory = GetQuestLogRewardArtifactXP();
-		honor = GetQuestLogRewardHonor();
-		playerTitle = GetQuestLogRewardTitle();
-		ProcessQuestLogRewardFactions();
-		numSpellRewards = GetNumQuestLogRewardSpells();
-		spellGetter = GetQuestLogRewardSpell;
+			numQuestRewards = GetNumQuestLogRewards();
+			numQuestChoices = GetNumQuestLogChoices();
+			numQuestCurrencies = GetNumQuestLogRewardCurrencies();
+			money = GetQuestLogRewardMoney();
+			skillName, skillIcon, skillPoints = GetQuestLogRewardSkillPoints();
+			xp = GetQuestLogRewardXP();
+			artifactXP, artifactCategory = GetQuestLogRewardArtifactXP();
+			honor = GetQuestLogRewardHonor();
+			playerTitle = GetQuestLogRewardTitle();
+			ProcessQuestLogRewardFactions();
+			numSpellRewards = GetNumQuestLogRewardSpells();
+			spellGetter = GetQuestLogRewardSpell;
 		end
 	else
 		numQuestRewards = GetNumQuestRewards();
 		numQuestChoices = GetNumQuestChoices();
-		numQuestCurrencies = 0;--GetNumRewardCurrencies();
+		numQuestCurrencies = GetNumRewardCurrencies();
 		money = GetRewardMoney();
-		skillName, skillIcon, skillPoints = 0, 0, 0;--GetRewardSkillPoints();
-		-- Don't show XP rewards in Classic.
-		xp = 0; --GetRewardXP();
-		artifactXP, artifactCategory = 0, nil;--GetRewardArtifactXP();
-		honor = 0;--GetRewardHonor();
-		playerTitle = nil;--GetRewardTitle();
+		skillName, skillIcon, skillPoints = GetRewardSkillPoints();
+		xp = GetRewardXP();
+		artifactXP, artifactCategory = GetRewardArtifactXP();
+		honor = GetRewardHonor();
+		playerTitle = GetRewardTitle();
 		numSpellRewards = GetNumRewardSpells();
 		spellGetter = GetRewardSpell;
 	end
@@ -784,7 +785,7 @@ function QuestInfo_ShowRewards()
 		baseIndex = rewardsCount;
 		local foundCurrencies = 0;
 		buttonIndex = buttonIndex + 1;
-		--[[for i = 1, GetMaxRewardCurrencies(), 1 do
+		for i = 1, GetMaxRewardCurrencies(), 1 do
 			index = i + baseIndex;
 			questItem = QuestInfo_GetRewardButton(rewardsFrame, index);
 			questItem.type = "reward";
@@ -830,7 +831,7 @@ function QuestInfo_ShowRewards()
 					break;
 				end
 			end
-		end]]
+		end
 
         rewardsFrame.HonorFrame:ClearAllPoints();
         if ( honor > 0 ) then
@@ -881,45 +882,10 @@ function QuestInfo_ToggleRewardElement(frame, value, anchor)
 	end
 end
 
---[[
-	AlphaDependentText
-	When instant quest text is disabled, some parts of quest text don't show up until the quest text has finished scrolling.
-	These functions control those elements.
-]]
-
-function QuestInfo_ShowAlphaDependentText(parent)
-	if (not parent.alphaDependentText) then
-		return;
-	end
-	for index,frame in ipairs(parent.alphaDependentText) do
-		frame:SetAlpha(1);
-	end
-end
-
-function QuestInfo_HideAlphaDependentText(parent)
-	if (not parent.alphaDependentText) then
-		return;
-	end
-	for index,frame in ipairs(parent.alphaDependentText) do
-		frame:SetAlpha(0);
-	end
-end
-
-function QuestInfo_FadeInAlphaDependentText(parent, fadeTime)
-	if (not parent.alphaDependentText) then
-		return;
-	end
-	for index,frame in ipairs(parent.alphaDependentText) do
-		if (frame:IsShown()) then
-			UIFrameFadeIn(frame, fadeTime );
-		end
-	end
-end
-
 QUEST_TEMPLATE_DETAIL = { questLog = nil, chooseItems = nil, contentWidth = 275,
 	canHaveSealMaterial = true, sealXOffset = 160, sealYOffset = -6,
 	elements = {
-		QuestInfo_ShowTitle, 5, -10,
+		QuestInfo_ShowTitle, 10, -10,
 		QuestInfo_ShowDescriptionText, 0, -5,
 		QuestInfo_ShowSeal, 0, 0,
 		QuestInfo_ShowObjectivesHeader, 0, -15,
@@ -983,6 +949,7 @@ QUEST_TEMPLATE_MAP_REWARDS = { questLog = true, chooseItems = nil, contentWidth 
 		QuestInfo_ShowRewards, 8, -42,
 	}
 }
+
 function QuestInfoRewardItemCodeTemplate_OnEnter(self)
 	GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
 	if ( QuestInfoFrame.questLog ) then

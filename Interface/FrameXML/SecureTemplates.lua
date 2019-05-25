@@ -140,7 +140,7 @@ function SecureButton_GetModifiedUnit(self, button)
                         unit = gsub(unit, "^[pP][lL][aA][yY][eE][rR][pP][eE][tT]", "pet");
                 end
 
-                --[[local noPet, hadPet = unit:gsub("[pP][eE][tT](%d)", "%1");
+                local noPet, hadPet = unit:gsub("[pP][eE][tT](%d)", "%1");
                 if ( hadPet == 0 ) then
                         noPet, hadPet = unit:gsub("^[pP][eE][tT]", "player");
                 end
@@ -158,7 +158,7 @@ function SecureButton_GetModifiedUnit(self, button)
                         elseif ( (hadTarget == 0) or SecureButton_GetModifiedAttribute(self, "allowVehicleTarget", button) ) then
                                 unit = unit:gsub("^[pP][lL][aA][yY][eE][rR]", "pet"):gsub("^([%a]+)([%d]+)", "%1pet%2");
                         end
-                end]]
+                end
 
                 return unit;
         end
@@ -337,7 +337,13 @@ SECURE_ACTIONS.action =
             local actionType, flyoutId = GetActionInfo(action);
             local cursorType = GetCursorInfo();
 
-			UseAction(action, unit, button);
+            if ( actionType == "flyout" and not cursorType ) then
+				local direction = SecureButton_GetModifiedAttribute(self, "flyoutDirection", button);
+                SpellFlyout:Toggle(flyoutId, self, direction, 3, true);
+            else
+                SpellFlyout:Hide();
+                UseAction(action, unit, button);
+            end
         end
     end;
 
@@ -410,7 +416,16 @@ SECURE_ACTIONS.item =
             end
         end
     end;
-
+	
+SECURE_ACTIONS.equipmentset =
+	function (self, unit, button)
+		local setName = SecureButton_GetModifiedAttribute(self, "equipmentset", button);
+		local setID = setName and C_EquipmentSet.GetEquipmentSetID(setName);
+		if ( setID ) then
+			C_EquipmentSet.UseEquipmentSet(setID);
+		end
+	end;
+	
 SECURE_ACTIONS.macro =
     function (self, unit, button)
         local macro = SecureButton_GetModifiedAttribute(self, "macro", button);
@@ -431,7 +446,6 @@ SECURE_ACTIONS.macro =
 local CANCELABLE_ITEMS = {
     [GetInventorySlotInfo("MainHandSlot")] = 1, -- main hand slot
     [GetInventorySlotInfo("SecondaryHandSlot")] = 2, -- off-hand slot
-	[GetInventorySlotInfo("RangedSlot")] = 3 -- ranged slot
 };
 
 SECURE_ACTIONS.cancelaura =
@@ -484,10 +498,10 @@ SECURE_ACTIONS.target =
         end
     end;
 
---[[SECURE_ACTIONS.focus =
+SECURE_ACTIONS.focus =
     function (self, unit, button)
         return FocusUnit(unit);
-    end;]]
+    end;
 
 SECURE_ACTIONS.assist =
     function (self, unit, button)

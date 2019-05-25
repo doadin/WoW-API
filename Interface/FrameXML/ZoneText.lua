@@ -88,7 +88,9 @@ function ZoneText_OnEvent(self, event, ...)
 		ZoneTextString:SetText( zoneText );
 		showZoneText = true;
 		SetZoneText( showZoneText );
-		FadingFrame_Show( self );
+		if ( not LevelUpDisplay:IsShown() ) then
+			FadingFrame_Show( self );
+		end
 	end
 	
 	local subzoneText = GetSubZoneText();
@@ -102,7 +104,9 @@ function ZoneText_OnEvent(self, event, ...)
 		if ( not self:IsShown() ) then
 			SubZoneTextString:SetText( subzoneText );
 			SetZoneText( showZoneText );
-			FadingFrame_Show( SubZoneTextFrame );
+			if ( not LevelUpDisplay:IsShown() ) then
+				FadingFrame_Show( SubZoneTextFrame );
+			end
 		end
 	else
 		if (self:IsShown()) then
@@ -110,7 +114,9 @@ function ZoneText_OnEvent(self, event, ...)
 		end
 		SubZoneTextString:SetText( subzoneText );
 		SetZoneText( showZoneText );
-		FadingFrame_Show( SubZoneTextFrame );
+		if ( not LevelUpDisplay:IsShown() ) then
+			FadingFrame_Show( SubZoneTextFrame );
+		end
 	end
 end
 
